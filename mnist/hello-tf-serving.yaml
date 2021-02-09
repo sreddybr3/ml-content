@@ -1,0 +1,49 @@
+apiVersion: ai.sap.com/v1alpha1
+kind: ServingTemplate
+metadata:
+  annotations:
+    scenarios.ai.sap.com/description: BlaBla
+    scenarios.ai.sap.com/name: testscenario
+    executables.ai.sap.com/description: "Tensorflow serving with custom docker image"
+    executables.ai.sap.com/name: "hello-tf-serving"
+  labels:
+    ai.sap.com/version: 0.1.0
+    scenarios.ai.sap.com/id: dba85cf3-2d69-498d-8ce5-4a415c9116dc
+  name: hello-tf-serving
+spec:
+  imagePullSecrets:
+    - name: docker-registry-secret
+  inputs: 
+    parameters:
+      - name: modelName
+        default: "mymodel"
+        type: string
+    artifacts:
+      - name: mymodel
+  template:
+    metadata:
+      annotations: |
+        autoscaling.knative.dev/metric: rps
+        autoscaling.knative.dev/target: 100
+        autoscaling.knative.dev/targetBurstCapacity: 70
+    spec: |
+        default:
+          predictor:
+            minReplicas: 0
+            custom:
+              container:
+                name: kfserving-container
+                image: mlf.docker.repositories.sapcdn.io/com.sap.dsp.linuxx86_64/ml-tf-serving-cpu:1.15.7
+                ports:
+                  - containerPort: 9001
+                env:
+                  - name: MODEL_CONTAINER_ID
+                    value: dummy_id
+                  - name: MODEL_CONTAINER_POD_NAME
+                    value: dummy_pod
+                  - name: MODELS_STR
+                    value: "{{inputs.parameters.modelName}}"
+                  - name: MODEL_PATH
+                    value: /mnt/models
+                  - name: STORAGE_URI
+                    value: "{{inputs.artifacts.mymodel}}"
