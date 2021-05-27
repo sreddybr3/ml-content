@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hacking-pod
+  # namespace: test-i058650-security
+spec:
+  containers:
+  - name: hacking-pod
+    image: busybox
+    command: ['sh', '-c', 'echo "Hello, Kubernetes!" && sleep 3600']
+  #   volumeMounts:
+  #   - name: foo
+  #     mountPath: "/etc/maas"
+  #     readOnly: true
+  # volumes:
+  # - name: foo
+  #   secret:
+  #     secretName: maas-secret
